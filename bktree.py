@@ -1,18 +1,3 @@
-"""
-This module implements Burkhard-Keller Trees (bk-tree).  bk-trees
-allow fast lookup of words that lie within a specified distance of a
-query word.  For example, this might be used by a spell checker to
-find near matches to a mispelled word.
-The implementation is based on the description in this article:
-http://blog.notdot.net/2007/4/Damn-Cool-Algorithms-Part-1-BK-Trees
-Licensed under the PSF license: http://www.python.org/psf/license/
-- Adam Hupp <adam@hupp.org>
-"""
-
-
-# from itertools import imap, ifilter
-
-
 class BKTree:
     """
     def __init__(self, distfn, words):
@@ -88,11 +73,9 @@ def brute_query(word, words, distfn, n):
     distfn: a binary function that returns the distance between a
     `word' and an item in `words'.
     n: an integer that specifies the distance of a matching word
-
     """
     return [i for i in words
             if distfn(i, word) <= n]
-
 
 def maxdepth(tree, c=0):
     _, children = tree
@@ -101,8 +84,6 @@ def maxdepth(tree, c=0):
     else:
         return c
 
-
-# http://en.wikibooks.org/wiki/Algorithm_implementation/Strings/Levenshtein_distance#Python
 def levenshtein(s, t):
     m, n = len(s), len(t)
     d = [range(n + 1)]
@@ -111,22 +92,11 @@ def levenshtein(s, t):
         for j in range(0, n):
             cost = 1
             if s[i] == t[j]: cost = 0
-
             d[i + 1].append(min(d[i][j + 1] + 1,  # deletion
                                 d[i + 1][j] + 1,  # insertion
                                 d[i][j] + cost)  # substitution
                             )
     return d[m][n]
-
-
-"""
-def dict_words(dictfile="/usr/share/dict/american-english"):
-    "Return an iterator that produces words in the given dictionary."
-    return ifilter(len,
-                   imap(str.strip,
-                        open(dictfile)))
-"""
-
 
 def list_words(dictfile):
     words = []
@@ -136,7 +106,6 @@ def list_words(dictfile):
             words.append(line)
     return words
 
-
 def timeof(fn, *args):
     import time
     t = time.time()
@@ -144,10 +113,8 @@ def timeof(fn, *args):
     print("time: ", (time.time() - t))
     return res
 
-
 if __name__ == "__main__":
     tree = BKTree(levenshtein, list_words('vocab.txt'))
-
     dist = 1
     for i in ["mil", "1mil", "1stqth", "houu",'1cle','11:11']:
         w = set(tree.query(i, dist))

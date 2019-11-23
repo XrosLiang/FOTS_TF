@@ -14,19 +14,18 @@ import os
 import numpy as np
 import tensorflow as tf
 import re
-
 import locality_aware_nms as nms_locality
-# import lanms
+
 from bktree import BKTree, levenshtein, list_words
 
 #/data/ceph_11015/ssd/anhan/nba/FOTS_TF/
 #/data/ceph_11015/ssd/templezhang/scoreboard/EAST/data/nba_test_1023.csv
-tf.app.flags.DEFINE_string('test_data_path', '/data/ceph_11015/ssd/templezhang/scoreboard/EAST/data/nba_test_1030.csv', '')
+tf.app.flags.DEFINE_string('test_data_path', '/data/ceph_11015/ssd/templezhang/scoreboard/EAST/data/check_res_15161718_test_null.csv', '')
 tf.app.flags.DEFINE_string('gpu_list', '0', '')
-tf.app.flags.DEFINE_bool("check_teamname",True, '')
-tf.app.flags.DEFINE_bool("just_infer", False, '')
-tf.app.flags.DEFINE_string('checkpoint_path','/data/ceph_11015/ssd/anhan/nba/FOTS_TF/checkpoints/bs16_540p_v1023_aughsv/', '')
-tf.app.flags.DEFINE_string('output_dir','/data/ceph_11015/ssd/anhan/nba/FOTS_TF/outputs/outputs_bs16_540p_v1023_aughsv_eval', '')
+tf.app.flags.DEFINE_bool("check_teamname",False, '')
+tf.app.flags.DEFINE_bool("just_infer",False, '')
+tf.app.flags.DEFINE_string('checkpoint_path','/data/ceph_11015/ssd/anhan/nba/FOTS_TF/checkpoints/bs16_540p_v1106_aughsv/', '')
+tf.app.flags.DEFINE_string('output_dir','/data/ceph_11015/ssd/anhan/nba/FOTS_TF/outputs/outputs_bs16_540p_v1106_aughsv_eval', '')
 tf.app.flags.DEFINE_bool('no_write_images', True, 'do not write images')
 tf.app.flags.DEFINE_string('vocab', '/data/ceph_11015/ssd/anhan/nba/FOTS_TF/vocab.txt', 'strong, normal or weak')
 
@@ -67,11 +66,13 @@ def get_image_self(img_base_dir):
     corridate_list=[]
     label_list=[]
     lines=open(FLAGS.test_data_path,"r",encoding="utf-8").readlines()
+    #print("======",len(lines))
     for line in lines:
+        #print(line)
         sp=line.strip().split(",")
-        # file=os.path.join(img_base_dir,sp[0])
-        # print(sp[0])
-        file=sp[0]
+        file=os.path.join(img_base_dir,sp[0])
+        #print(file)
+        # file=sp[0]
         # file=sp[0].strip().replace("_","/").replace("ceph/","ceph_")
         corridate=sp[1]
         label=sp[2]
@@ -593,12 +594,13 @@ def main(argv=None):
 
             # im_fn_list = get_images()
             if FLAGS.just_infer:
-                im_fn_list=get_images()
+                im_fn_list,_,_=get_image_self("/data/ceph_11015/ssd/anhan/nba/video2image")
             else:
                 im_fn_list, corridate_list, label_list = get_image_self("/data/ceph_11015/ssd/anhan/nba/video2image")
             wrong=0
             total=0
             for ind,im_fn in enumerate(im_fn_list):
+                #print("im_fn:",im_fn)
                 im = cv2.imread(im_fn)[:, :, ::-1]
                 im = cv2.resize(im, (960, 540))
 
@@ -750,17 +752,19 @@ def main(argv=None):
                     label_true = label_list[ind].split("_")
                     res_true = get_score_info_v2(corridate_true, label_true)
                     if res != res_true:
+                        #print(im_fn.split("/")[-1],'wrong!!!')
                         wrong += 1
                         #print(im_fn.split("/")[-1],label_list[ind],res_true,res,("_").join(str_list))
                     total += 1
                     print(im_fn.split("/")[-1], label_list[ind], res_true, res, ("_").join(str_list))
                 else:
-                    print(res,("_").join(str_list))
+                    print(im_fn.split("/")[-1], res,("_").join(str_list))
                 duration = time.time() - start_time
                 #print('{} : detect {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms, recog {:.0f}ms'.format(im_fn, timer['detect']*1000, timer['restore']*1000, timer['nms']*1000, timer['recog']*1000))
+            print("wrong:{}".format( wrong))
+            print("total:{}".format(total))
             print("precision:{}".format((total-wrong)/total))
                 # print('[timing] {}'.format(duration))
-
 
 
 if __name__ == '__main__':

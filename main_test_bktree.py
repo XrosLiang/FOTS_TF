@@ -1,6 +1,6 @@
 #!/data/anaconda3/bin/python
 # -*- coding: utf-8 -*-
-#
+# #
 # from pip._internal import main
 # main(["install","shapely"])
 # main(["install","Polygon3"])
@@ -20,10 +20,10 @@ import locality_aware_nms as nms_locality
 from bktree import BKTree, levenshtein, list_words
 
 #/data/ceph_11015/ssd/anhan/nba/FOTS_TF/
-tf.app.flags.DEFINE_string('test_data_path', 'samples/new2019/', '')
+tf.app.flags.DEFINE_string('test_data_path', 'samples', '')
 tf.app.flags.DEFINE_string('gpu_list', '0', '')
-tf.app.flags.DEFINE_string('checkpoint_path', 'checkpoints/bs16_540p_v1023_aughsv/', '')
-tf.app.flags.DEFINE_string('output_dir', 'outputs/outputs_bs16_540p_v1023_aughsv_new2019', '')
+tf.app.flags.DEFINE_string('checkpoint_path', 'checkpoints/bs16_540p_v1106_aughsv', '')
+tf.app.flags.DEFINE_string('output_dir','outputs/outputs_bs16_540p_v1106_aughsv', '')
 tf.app.flags.DEFINE_bool('no_write_images', False, 'do not write images')
 tf.app.flags.DEFINE_string('vocab', 'vocab.txt', 'strong, normal or weak')
 
@@ -226,7 +226,8 @@ def main(argv=None):
 
             im_fn_list = get_images()
             for im_fn in im_fn_list:
-                im = cv2.imread(im_fn)[:, :, ::-1]
+                #im = cv2.imread(im_fn)[:, :, ::-1]
+                im = cv2.imread(im_fn)
                 im = cv2.resize(im, (960, 540))
 
                 start_time = time.time()
@@ -279,9 +280,12 @@ def main(argv=None):
                             recognition_result = ground_truth_to_word(recog_decode_list[i])
 
                             if contain_eng(recognition_result):
+                                print(recognition_result)
                                 fix_result = bktree_search(bk_tree, recognition_result.lower())
+                                print(fix_result)
                                 if len(fix_result) != 0:
                                     recognition_result = fix_result[0][1]
+                                   # print(recognition_result)
                             else:
                                 recognition_result = recognition_result
 
@@ -308,7 +312,8 @@ def main(argv=None):
                     im_txt = None
                     f.close()
 
-                #print('{} : detect {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms, recog {:.0f}ms'.format(im_fn, timer['detect']*1000, timer['restore']*1000, timer['nms']*1000, timer['recog']*1000))
+                print('{} : detect {:.0f}ms, restore {:.0f}ms, nms {:.0f}ms, recog {:.0f}ms'.format(
+                    im_fn, timer['detect']*1000, timer['restore']*1000, timer['nms']*1000, timer['recog']*1000))
 
                 duration = time.time() - start_time
                 print('[timing] {}'.format(duration))

@@ -17,7 +17,7 @@ from tensorflow.contrib import slim
 #/data/ceph_11015/ssd/anhan/nba/FOTS_TF/
 
 tf.app.flags.DEFINE_integer('input_size', 512, '')
-tf.app.flags.DEFINE_integer('batch_size_per_gpu', 16, '')
+tf.app.flags.DEFINE_integer('batch_size_per_gpu', 32, '')
 tf.app.flags.DEFINE_integer('num_readers', 6, '')
 tf.app.flags.DEFINE_float('learning_rate', 0.0001, '')
 tf.app.flags.DEFINE_integer('max_steps', 600001, '')
@@ -181,7 +181,7 @@ def main(argv=None):
                 print('Loss diverged, stop training')
                 break
 
-            if step % 100 == 0:
+            if step % 10 == 0:
                 avg_time_per_step = (time.time() - start)/10
                 avg_examples_per_second = (10 * FLAGS.batch_size_per_gpu)/(time.time() - start)
                 start = time.time()
